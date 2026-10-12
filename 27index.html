@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevTimer Pro - Pomodoro & Focus Timer</title>
+    
+    <!-- CSS STYLES -->
+    <style>
+        :root {
+            --bg: #0d1117;
+            --panel: #161b22;
+            --border: #30363d;
+            --accent: #f85149;
+            --accent-hover: #da3633;
+            --text: #c9d1d9;
+            --text-dim: #8b949e;
+            --success: #238636;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 30px 15px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            color: var(--accent);
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-dim);
+            font-size: 1rem;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            text-align: center;
+        }
+
+        .modes {
+            display: flex;
+            background: #090d16;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .timer-display {
+            font-size: 4.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-bottom: 25px;
+            color: var(--text);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button.control-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.control-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        button.secondary-btn {
+            background: var(--border);
+            color: var(--text);
+        }
+        button.secondary-btn:hover {
+            background: #484f58;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⏳ DevTimer Pro</h1>
+        <p>Diqqatni jamlash va vaqtni boshqarish uchun Pomodoro taymeri</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="modes">
+            <button class="mode-btn active" onclick="setMode('work', 25)">Ish (25m)</button>
+            <button class="mode-btn" onclick="setMode('shortBreak', 5)">Qisqa Tanaffus (5m)</button>
+            <button class="mode-btn" onclick="setMode('longBreak', 15)">Uzoq Tanaffus (15m)</button>
+        </div>
+
+        <div class="timer-display" id="timerDisplay">25:00</div>
+
+        <div class="controls">
+            <button class="control-btn" id="startBtn" onclick="toggleTimer()">Boshlash ▷</button>
+            <button class="control-btn secondary-btn" onclick="resetTimer()">Qayta tiklash ↺</button>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let timeLeft = 25 * 60;
+        let timerId = null;
+        let isRunning = false;
+        let currentMinutes = 25;
+
+        const timerDisplay = document.getElementById('timerDisplay');
+        const startBtn = document.getElementById('startBtn');
+        const modeBtns = document.querySelectorAll('.mode-btn');
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.title = `${timerDisplay.textContent} - DevTimer Pro`;
+        }
+
+        function setMode(mode, minutes) {
+            clearInterval(timerId);
+            isRunning = false;
+            startBtn.textContent = "Boshlash ▷";
+            currentMinutes = minutes;
+            timeLeft = minutes * 60;
+            updateDisplay();
+
+            modeBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(timerId);
+                isRunning = false;
+                startBtn.textContent = "Davom etish ▷";
+            } else {
+                isRunning = true;
+                startBtn.textContent = "To'xtatib turish ⏸";
+                timerId = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateDisplay();
+                    } else {
+                        clearInterval(timerId);
+                        isRunning = false;
+                        alert("Vaqt tugadi! Dam olish yoki ish vaqti almashdi.");
+                        startBtn.textContent = "Boshlash ▷";
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerId);
+            isRunning = false;
+            timeLeft = currentMinutes * 60;
+            startBtn.textContent = "Boshlash ▷";
+            updateDisplay();
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>
